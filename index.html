@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سرعت‌سنج GPS پیشرفته</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #7ed321;
+            --danger: #ff4757;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(45deg, #0f0c29, #302b63);
+            color: white;
+            padding: 1rem;
+        }
+
+        .container {
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .speed-display {
+            font-size: 6rem;
+            font-weight: 800;
+            margin: 2rem 0;
+            position: relative;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .units {
+            font-size: 1.5rem;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+
+        .status-card {
+            background: var(--glass);
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .status-icon {
+            font-size: 1.5rem;
+        }
+
+        .max-speed {
+            font-size: 1.2rem;
+            background: var(--glass);
+            padding: 0.8rem 1.5rem;
+            border-radius: 30px;
+            margin: 1.5rem 0;
+            display: inline-block;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 180px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), #6c5ce7);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, var(--secondary), #b8e994);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, var(--danger), #ff6b81);
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loader {
+            width: 24px;
+            height: 24px;
+            border: 3px solid white;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .speed-display {
+                font-size: 4rem;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 سرعت‌سنج هوشمند</h1>
+        
+        <div class="speed-display" id="speed">0</div>
+        <div class="units">کیلومتر بر ساعت</div>
+        
+        <div class="status-card" id="status">
+            <i class="status-icon fas fa-info-circle"></i>
+            <span>سیستم آماده به کار است</span>
+        </div>
+        
+        <div class="max-speed">
+            <i class="fas fa-tachometer-alt"></i>
+            حداکثر سرعت: <span id="maxSpeed">0</span> ک.م/س
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" id="startButton">
+                <i class="fas fa-play"></i>
+                شروع اندازه‌گیری
+            </button>
+            <button class="btn-danger" id="resetButton">
+                <i class="fas fa-redo"></i>
+                بازنشانی
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const elements = {
+            speed: document.getElementById('speed'),
+            status: document.getElementById('status'),
+            maxSpeed: document.getElementById('maxSpeed'),
+            startButton: document.getElementById('startButton'),
+            resetButton: document.getElementById('resetButton')
+        };
+
+        let watchId = null;
+        let maxSpeed = 0;
+        let isMeasuring = false;
+
+        // تنظیمات اولیه
+        updateStatus('ready', 'سیستم آماده به کار است');
+
+        elements.startButton.addEventListener('click', toggleMeasurement);
+        elements.resetButton.addEventListener('click', resetMeasurements);
+
+        async function toggleMeasurement() {
+            if (isMeasuring) {
+                stopMeasurement();
+            } else {
+                await startMeasurement();
+            }
+        }
+
+        async function startMeasurement() {
+            if (!navigator.geolocation) {
+                updateStatus('error', 'مرورگر شما از GPS پشتیبانی نمی‌کند');
+                return;
+            }
+
+            try {
+                const permission = await navigator.permissions.query({ name: 'geolocation' });
+                if (permission.state === 'denied') {
+                    updateStatus('error', 'دسترسی به موقعیت مکانی رد شد');
+                    return;
+                }
+
+                updateStatus('loading', 'در حال دریافت موقعیت...');
+                elements.startButton.disabled = true;
+
+                watchId = navigator.geolocation.watchPosition(
+                    handlePositionSuccess,
+                    handlePositionError,
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 5000,
+                        maximumAge: 0
+                    }
+                );
+
+                isMeasuring = true;
+                updateStatus('success', 'در حال اندازه‌گیری سرعت');
+                elements.startButton.innerHTML = `<i class="fas fa-stop"></i> توقف اندازه‌گیری`;
+                elements.startButton.classList.replace('btn-primary', 'btn-secondary');
+            } catch (error) {
+                handlePositionError(error);
+            } finally {
+                elements.startButton.disabled = false;
+            }
+        }
+
+        function stopMeasurement() {
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+            isMeasuring = false;
+            updateStatus('ready', 'سیستم آماده به کار است');
+            elements.startButton.innerHTML = `<i class="fas fa-play"></i> شروع اندازه‌گیری`;
+            elements.startButton.classList.replace('btn-secondary', 'btn-primary');
+        }
+
+        function handlePositionSuccess(position) {
+            if (!position.coords.speed) {
+                updateStatus('warning', 'سرعت قابل تشخیص نیست');
+                elements.speed.textContent = '0';
+                return;
+            }
+
+            const speedKmh = Math.round(position.coords.speed * 3.6);
+            elements.speed.textContent = speedKmh;
+            
+            if (speedKmh > maxSpeed) {
+                maxSpeed = speedKmh;
+                elements.maxSpeed.textContent = maxSpeed;
+            }
+        }
+
+        function handlePositionError(error) {
+            let message = 'خطا در دریافت اطلاعات موقعیت';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = 'دسترسی به موقعیت مکانی غیرفعال است';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = 'دسترسی به GPS امکان‌پذیر نیست';
+                    break;
+                case error.TIMEOUT:
+                    message = 'اتصال به GPS زمان‌بر شد';
+                    break;
+            }
+            updateStatus('error', message);
+            stopMeasurement();
+        }
+
+        function resetMeasurements() {
+            maxSpeed = 0;
+            elements.maxSpeed.textContent = '0';
+            elements.speed.textContent = '0';
+            updateStatus('info', 'مقادیر بازنشانی شدند');
+        }
+
+        function updateStatus(type, message) {
+            const iconMap = {
+                loading: 'fas fa-sync fa-spin',
+                ready: 'fas fa-check-circle',
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-triangle',
+                warning: 'fas fa-exclamation-circle',
+                info: 'fas fa-info-circle'
+            };
+
+            const colorMap = {
+                loading: '#4a90e2',
+                ready: '#7ed321',
+                success: '#7ed321',
+                error: '#ff4757',
+                warning: '#ffa502',
+                info: '#70a1ff'
+            };
+
+            elements.status.innerHTML = `
+                <i class="status-icon ${iconMap[type]}" style="color: ${colorMap[type]}"></i>
+                ${message}
+            `;
+            elements.status.style.background = type === 'loading' ? 'transparent' : colorMap[type] + '20';
+        }
+    </script>
+</body>
+</html>
