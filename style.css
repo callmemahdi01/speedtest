@@ -132,14 +132,13 @@ input:checked + .slider:before {
 }
 
 /* استایل‌های کنترل‌های هدر */
-.controls-container { /* نام جدید */
+.controls-container {
     position: absolute;
-    top: 15px; /* کمی فاصله از بالا */
-    right: 5px; /* انتقال به سمت چپ برای زبان فارسی */
+    top: 15px; /* فاصله از بالا */
+    left: 15px; /* فاصله از چپ */
     display: flex;
     align-items: center;
     gap: 15px; /* فاصله بین کنترل‌ها */
-    flex-direction: row-reverse;
 }
 
 .theme-toggle {

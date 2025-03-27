@@ -30,8 +30,11 @@
                     <label class="theme-toggle kalman-toggle" for="kalmanFilterToggle" title="فعال/غیرفعال کردن فیلتر کالمن برای کاهش نویز سرعت" aria-label="تغییر وضعیت فیلتر کالمن">
                         <input type="checkbox" id="kalmanFilterToggle">
                         <div class="slider round">
+                            <i class="fas fa-filter-circle-xmark filter-off-icon"></i>
+                            <i class="fas fa-filter-circle-check filter-on-icon"></i>
                         </div>
                     </label>
+                    <span id="kalmanFilterLabel" class="filter-status-label">فیلتر خاموش</span>
                 </div>
 
                 <button id="fullscreenToggle" class="fullscreen-btn" title="تمام صفحه" aria-label="تغییر حالت تمام صفحه">
