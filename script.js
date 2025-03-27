@@ -12,8 +12,6 @@ const kalmanFilterToggle = document.getElementById('kalmanFilterToggle');
 let watchId = null;
 let maxSpeed = 0;
 let isKalmanFilterEnabled = true;
-// ایجاد شیء فیلتر سرعت پیشرفته
-let speedFilter = new EnhancedSpeedFilter();
 
 // بررسی و اعمال حالت ذخیره شده در localStorage
 if (localStorage.getItem('darkMode') === 'enabled') {
@@ -240,3 +238,6 @@ class EnhancedSpeedFilter {
     }
 }
 // --- پایان کلاس‌های فیلتر کالمن ---
+
+// نمونه‌سازی فیلتر سرعت
+const speedFilter = new EnhancedSpeedFilter();
