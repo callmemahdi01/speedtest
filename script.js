@@ -8,6 +8,7 @@ const darkModeToggle = document.getElementById('darkModeToggle');
 const themeStylesheet = document.getElementById('theme-stylesheet');
 const fullscreenToggle = document.getElementById('fullscreenToggle');
 const kalmanFilterToggle = document.getElementById('kalmanFilterToggle');
+const kalmanFilterLabel = document.getElementById('kalmanFilterLabel');
 
 let watchId = null;
 let maxSpeed = 0;
@@ -27,6 +28,7 @@ if (localStorage.getItem('kalmanFilter') === 'enabled') {
     isKalmanFilterEnabled = false;
     kalmanFilterToggle.checked = false;
 }
+updateKalmanFilterLabel();
 
 // تغییر تم بین حالت دارک و لایت
 darkModeToggle.addEventListener('change', function () {
@@ -49,18 +51,16 @@ function disableDarkMode() {
 
 // تغییر وضعیت فیلتر کالمن
 kalmanFilterToggle.addEventListener('change', function () {
-    if (this.checked) {
-        isKalmanFilterEnabled = true;
+    isKalmanFilterEnabled = this.checked;
+    if (isKalmanFilterEnabled) {
         localStorage.setItem('kalmanFilter', 'enabled');
         console.log('Kalman Filter Enabled');
     } else {
-        isKalmanFilterEnabled = false;
         localStorage.setItem('kalmanFilter', 'disabled');
         console.log('Kalman Filter Disabled');
-        // ریست کردن فیلتر هنگام خاموش کردن (اختیاری)
-        // speedFilter.kalmanFilter.x = 0;
-        // speedFilter.kalmanFilter.p = 1;
+        speedFilter.reset();
     }
+    updateKalmanFilterLabel();
 });
 
 // دکمه‌ی تمام صفحه
@@ -91,19 +91,18 @@ function startMeasuring() {
 
     watchId = navigator.geolocation.watchPosition(updateSpeed, handleError, {
         enableHighAccuracy: true,
-        timeout: 5000,
+        timeout: 10000,
         maximumAge: 0
     });
 }
 
 function updateSpeed(position) {
-    if (position.coords.speed !== null) {
-        let rawSpeed = position.coords.speed * 3.6; // تبدیل به km/h
+    if (position.coords.speed !== null && position.coords.speed !== undefined) {
+        let rawSpeed = position.coords.speed * 3.6;
         let displaySpeed;
 
         if (isKalmanFilterEnabled) {
             displaySpeed = speedFilter.update(rawSpeed);
-            // اطمینان از عدم نمایش سرعت منفی (خروجی فیلتر ممکن است کمی منفی شود)
             displaySpeed = Math.max(0, displaySpeed);
         } else {
             displaySpeed = rawSpeed;
@@ -111,176 +110,112 @@ function updateSpeed(position) {
 
         speedElement.textContent = displaySpeed.toFixed(1);
 
-        // به‌روزرسانی سرعت حداکثر بر اساس سرعت نمایش داده شده
-        if (displaySpeed > maxSpeed) {
+        const currentMaxSpeed = parseFloat(maxSpeedElement.textContent);
+        if (parseFloat(displaySpeed.toFixed(1)) > currentMaxSpeed) {
             maxSpeed = displaySpeed;
-            maxSpeedElement.textContent = maxSpeed.toFixed(1);
+            maxSpeedElement.textContent = displaySpeed.toFixed(1);
         }
         statusElement.textContent = 'در حال اندازه‌گیری...';
+        if (position.coords.accuracy) {
+            statusElement.textContent += ` (دقت: ${position.coords.accuracy.toFixed(0)} متر)`;
+        }
+
     } else {
-        // اگر سرعت null بود، مقدار صفر را نمایش بده
-        speedElement.textContent = '0';
+        speedElement.textContent = '0.0';
         statusElement.textContent = 'سرعت نامشخص';
     }
 }
 
 function handleError(error) {
-    statusElement.textContent = 'خطای GPS';
+    let message = 'خطای GPS: ';
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            message += "دسترسی به موقعیت مکانی رد شد.";
+            break;
+        case error.POSITION_UNAVAILABLE:
+            message += "اطلاعات موقعیت مکانی در دسترس نیست.";
+            break;
+        case error.TIMEOUT:
+            message += "زمان درخواست موقعیت مکانی به پایان رسید.";
+            break;
+        case error.UNKNOWN_ERROR:
+            message += "خطای ناشناخته رخ داد.";
+            break;
+    }
+    console.error("Geolocation Error:", error);
+    statusElement.textContent = message;
     startButton.disabled = false;
 }
 
 function resetMeasurements() {
     if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
-        watchId = null; // اطمینان از null شدن watchId
+        watchId = null;
     }
-    speedElement.textContent = '0';
-    maxSpeedElement.textContent = '0';
-    maxSpeed = 0; // ریست کردن متغیر maxSpeed
+    speedElement.textContent = '0.0';
+    maxSpeedElement.textContent = '0.0';
+    maxSpeed = 0;
     statusElement.textContent = 'در انتظار شروع...';
     startButton.disabled = false;
 
-    // ریست کردن فیلتر کالمن (اختیاری)
-    // speedFilter.kalmanFilter.x = 0;
-    // speedFilter.kalmanFilter.p = 1;
-    // speedFilter.speedHistory = [];
+    speedFilter.reset();
+    console.log('Measurements and Kalman Filter Reset');
 }
 
 // --- کلاس‌های فیلتر کالمن ---
 class KalmanFilter {
     constructor(r = 0.5, q = 0.01) {
-        this.r = r; // نویز اندازه‌گیری
-        this.q = q; // نویز فرایند
-        this.x = 0; // مقدار تخمین زده شده
-        this.p = 1; // کواریانس خطا
-        this.k = 0; // بهره کالمن
+        this.R = r;
+        this.Q = q;
+        this.x = 0;
+        this.p = 1;
+        this.k = 0;
     }
 
     update(measurement) {
-        // پیش‌بینی مقدار بعدی
-        this.p = this.p + this.q;
-
-        // محاسبه بهره کالمن
-        this.k = this.p / (this.p + this.r);
-
-        // به‌روزرسانی مقدار تخمینی
+        this.p = this.p + this.Q;
+        this.k = this.p / (this.p + this.R);
         this.x = this.x + this.k * (measurement - this.x);
-
-        // به‌روزرسانی کواریانس خطا
         this.p = (1 - this.k) * this.p;
-
         return this.x;
+    }
+
+    reset() {
+        this.x = 0;
+        this.p = 1;
+        this.k = 0;
     }
 }
 
-class EnhancedSpeedFilter {
+class SpeedFilterManager {
     constructor(options = {}) {
-        // پارامترهای پیش‌فرض
-        this.options = {
-            measurementNoiseR: 0.5,   // نویز اندازه‌گیری
-            processNoiseQ: 0.01,       // نویز فرایند - حالت عادی
-            processNoiseQAccel: 0.5,   // نویز فرایند - حالت شتاب
-            accelThreshold: 0.8,       // آستانه تشخیص شتاب (km/h در ثانیه)
-            historyLimit: 5,           // تعداد نمونه‌های قبلی
-            commonSpeeds: [80, 90, 100, 110, 120, 130], // سرعت‌های معمول کروز
-            maxSpeedVariation: 2       // حداکثر تغییر مجاز سرعت
+        const defaultOptions = {
+            measurementNoiseR: 0.3,
+            processNoiseQ: 0.05
         };
+        this.options = { ...defaultOptions, ...options };
 
-        // ادغام پارامترهای دلخواه کاربر
-        Object.assign(this.options, options);
-
-        // فیلتر کالمن
         this.kalmanFilter = new KalmanFilter(
             this.options.measurementNoiseR,
             this.options.processNoiseQ
         );
-
-        // تاریخچه سرعت
-        this.speedHistory = [];
-        this.lastSpeed = null;
-        this.lastUpdateTime = null;
     }
 
     update(speed) {
-        const now = Date.now();
-        
-        // تشخیص شتاب (اگر داده قبلی موجود است)
-        let acceleration = 0;
-        let isAccelerating = false;
-        
-        if (this.lastSpeed !== null && this.lastUpdateTime !== null) {
-            const dt = (now - this.lastUpdateTime) / 1000; // به ثانیه
-            acceleration = Math.abs(speed - this.lastSpeed) / dt; // km/h در ثانیه
-            isAccelerating = acceleration > this.options.accelThreshold;
-            
-            // تنظیم دینامیک نویز فرایند بر اساس شتاب
-            if (isAccelerating) {
-                this.kalmanFilter.q = this.options.processNoiseQAccel;
-            } else {
-                this.kalmanFilter.q = this.options.processNoiseQ;
-            }
-        }
-        
-        // اعمال فیلتر کالمن
-        let filteredSpeed = this.kalmanFilter.update(speed);
-        
-        // ذخیره سرعت در تاریخچه
-        this.speedHistory.push(filteredSpeed);
-        if (this.speedHistory.length > this.options.historyLimit) {
-            this.speedHistory.shift();
-        }
-        
-        // به‌روزرسانی مقادیر قبلی
-        this.lastSpeed = speed;
-        this.lastUpdateTime = now;
-        
-        // محاسبه میانگین هوشمند و رند کردن
-        let avgSpeed = this.calculateSmartAverage(this.speedHistory);
-        return this.smartRound(avgSpeed);
+        return this.kalmanFilter.update(speed);
     }
-    
-    calculateSmartAverage(history) {
-        if (history.length < 3) {
-            return history.length > 0 ? history[history.length - 1] : 0;
-        }
-        
-        // حذف مقادیر پرت
-        const sortedHistory = [...history].sort((a, b) => a - b);
-        let trimmedHistory;
-        
-        if (sortedHistory.length >= 5) {
-            // حذف بالاترین و پایین‌ترین مقدار
-            trimmedHistory = sortedHistory.slice(1, -1);
-        } else {
-            trimmedHistory = sortedHistory;
-        }
 
-        // محاسبه میانگین
-        return trimmedHistory.reduce((a, b) => a + b, 0) / trimmedHistory.length;
-    }
-    
-    smartRound(speed) {
-        // جستجوی سرعت معمول کروز در محدوده
-        for (const commonSpeed of this.options.commonSpeeds) {
-            if (Math.abs(speed - commonSpeed) < this.options.maxSpeedVariation) {
-                // وزن‌دهی بر اساس نزدیکی به سرعت معمول
-                const weight = 1 - Math.abs(speed - commonSpeed) / this.options.maxSpeedVariation;
-                
-                // اگر خیلی نزدیک است (بیش از 50% وزن)، به سرعت معمول گرد شود
-                if (weight > 0.5) {
-                    return commonSpeed;
-                }
-            }
-        }
-        
-        // در غیر این صورت، گرد کردن به یک رقم اعشار
-        return Math.round(speed * 10) / 10;
+    reset() {
+        this.kalmanFilter.reset();
     }
 }
 
-// نمونه‌سازی فیلتر
-const speedFilter = new EnhancedSpeedFilter({
-    baseSpeed: 120,
-    maxSpeedVariation: 1
+const speedFilter = new SpeedFilterManager({
 });
 // --- پایان کلاس‌های فیلتر کالمن ---
+
+function updateKalmanFilterLabel() {
+    if (kalmanFilterLabel) {
+        kalmanFilterLabel.textContent = isKalmanFilterEnabled ? 'فیلتر روشن' : 'فیلتر خاموش';
+    }
+}

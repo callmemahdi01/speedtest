@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سرعت سنج با GPS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>سرعت سنج GPS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="light.css" id="theme-stylesheet">
     <link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
 </head>
 <body>
     <div class="app-container">
         <div class="app-header">
-            <h1 class="app-title">سرعت سنج خودرو</h1>
-            <p class="app-subtitle">با استفاده از فناوری GPS</p>
+            <h1 class="app-title">سرعت سنج GPS</h1>
+            <p class="app-subtitle">اندازه‌گیری دقیق سرعت خودرو</p>
 
-            <div class="theme-toggle-container">
-                <!-- Dark Mode Toggle Switch -->
-                <label class="theme-toggle" for="darkModeToggle">
+            <div class="controls-container">
+                <label class="theme-toggle" for="darkModeToggle" title="تغییر تم روشن/تاریک" aria-label="تغییر تم">
                     <input type="checkbox" id="darkModeToggle">
                     <div class="slider round">
                         <i class="fas fa-sun light-icon"></i>
@@ -24,17 +26,18 @@
                     </div>
                 </label>
 
-                <!-- Kalman Filter Toggle Switch -->
-                <label class="theme-toggle kalman-toggle" for="kalmanFilterToggle">
-                    <input type="checkbox" id="kalmanFilterToggle">
-                    <div class="slider round">
-                        <!-- Icons can be added here if desired, e.g., filter icons -->
-                        <span class="toggle-label">فیلتر</span>
-                    </div>
-                </label>
+                <div class="filter-toggle-wrapper">
+                    <label class="theme-toggle kalman-toggle" for="kalmanFilterToggle" title="فعال/غیرفعال کردن فیلتر کالمن برای کاهش نویز سرعت" aria-label="تغییر وضعیت فیلتر کالمن">
+                        <input type="checkbox" id="kalmanFilterToggle">
+                        <div class="slider round">
+                            <i class="fas fa-filter-circle-xmark filter-off-icon"></i>
+                            <i class="fas fa-filter-circle-check filter-on-icon"></i>
+                        </div>
+                    </label>
+                    <span id="kalmanFilterLabel" class="filter-status-label">فیلتر خاموش</span>
+                </div>
 
-                <!-- Fullscreen Button -->
-                <button id="fullscreenToggle" class="fullscreen-btn">
+                <button id="fullscreenToggle" class="fullscreen-btn" title="تمام صفحه" aria-label="تغییر حالت تمام صفحه">
                     <i class="fas fa-expand"></i>
                 </button>
             </div>
@@ -43,27 +46,27 @@
         <div class="speedometer">
             <div class="speed-circle">
                 <div>
-                    <div class="speed-value" id="speed">0</div>
+                    <div class="speed-value" id="speed">0.0</div>
                     <div class="speed-unit">کیلومتر بر ساعت</div>
                 </div>
             </div>
 
             <div class="max-speed">
                 <span class="max-speed-label">حداکثر سرعت:</span>
-                <span class="max-speed-value"><span id="maxSpeed">0</span> کیلومتر بر ساعت</span>
+                <span class="max-speed-value"><span id="maxSpeed">0.0</span> km/h</span>
             </div>
         </div>
 
         <div class="status-panel">
-            <i class="fas fa-info-circle"></i>
+            <i class="fas fa-info-circle status-icon"></i>
             <span class="status-text" id="status">در انتظار شروع...</span>
         </div>
 
         <div class="controls">
-            <button id="startButton" class="btn start-btn">
-                <i class="fas fa-play"></i> شروع اندازه گیری
+            <button id="startButton" class="btn start-btn" aria-label="شروع اندازه‌گیری سرعت">
+                <i class="fas fa-play"></i> شروع
             </button>
-            <button id="resetButton" class="btn reset-btn">
+            <button id="resetButton" class="btn reset-btn" aria-label="بازنشانی سرعت و حداکثر سرعت">
                 <i class="fas fa-redo-alt"></i> بازنشانی
             </button>
         </div>

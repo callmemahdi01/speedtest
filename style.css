@@ -130,3 +130,193 @@ input:checked + .slider:before {
     /* Ensure handle is above label */
     z-index: 2;
 }
+
+/* استایل‌های کنترل‌های هدر */
+.controls-container { /* نام جدید */
+    position: absolute;
+    top: 5px; /* کمی فاصله از بالا */
+    left: 5px; /* انتقال به سمت چپ برای زبان فارسی */
+    right: auto; /* حذف right */
+    display: flex;
+    align-items: center;
+    gap: 15px; /* فاصله بین کنترل‌ها */
+}
+
+.theme-toggle {
+    position: relative;
+    display: inline-block;
+    width: 50px; /* کمی کوچک‌تر */
+    height: 26px; /* کمی کوچک‌تر */
+    margin: 0; /* حذف مارجین اضافی */
+}
+
+.theme-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* برای آیکون‌های تم */
+    padding: 0 4px; /* کمی پدینگ کمتر */
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px; /* متناسب با ارتفاع جدید */
+    width: 20px;  /* متناسب با ارتفاع جدید */
+    left: 3px;    /* تنظیم موقعیت */
+    bottom: 3px;  /* تنظیم موقعیت */
+    background-color: white;
+    transition: .4s;
+    z-index: 2;
+}
+
+/* استایل تم */
+input:checked + .slider {
+    background-color: #333; /* رنگ تم دارک */
+    box-shadow: 0 0 2px white;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #333;
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px); /* تنظیم مقدار جابجایی */
+}
+
+.slider.round {
+    border-radius: 26px; /* گرد کردن متناسب با ارتفاع */
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.light-icon, .dark-icon {
+    color: #f39c12; /* رنگ آیکون خورشید */
+    font-size: 12px; /* اندازه آیکون */
+    transition: opacity 0.3s ease;
+}
+
+.dark-icon {
+    color: #f5f5f5; /* رنگ آیکون ماه */
+}
+
+/* نمایش/عدم نمایش آیکون‌های تم */
+.theme-toggle input:not(:checked) + .slider .dark-icon {
+    opacity: 0;
+}
+.theme-toggle input:checked + .slider .light-icon {
+    opacity: 0;
+}
+
+/* استایل سوییچ فیلتر کالمن */
+.filter-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* فاصله بین سوییچ و لیبل وضعیت */
+}
+
+.kalman-toggle .slider {
+    background-color: #ff6b6b; /* قرمز برای حالت خاموش */
+    justify-content: center; /* آیکون‌ها در وسط */
+}
+
+.kalman-toggle input:checked + .slider {
+    background-color: #4CAF50; /* سبز برای حالت روشن */
+}
+
+/* آیکون‌های فیلتر */
+.filter-on-icon, .filter-off-icon {
+    color: white;
+    font-size: 14px;
+    position: absolute; /* برای قرارگیری روی هم */
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease;
+}
+
+.kalman-toggle input:not(:checked) + .slider .filter-on-icon {
+    opacity: 0;
+}
+.kalman-toggle input:checked + .slider .filter-off-icon {
+    opacity: 0;
+}
+
+.filter-status-label {
+    font-size: 12px;
+    color: #555; /* رنگ متن وضعیت */
+    white-space: nowrap; /* جلوگیری از شکستن خط */
+}
+
+/* استایل دکمه‌ی تمام صفحه */
+.fullscreen-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    /* margin-left: 10px; حذف مارجین اضافی */
+    color: #777;
+    transition: color 0.3s ease;
+    padding: 0; /* حذف پدینگ اضافی */
+    line-height: 1; /* تنظیم ارتفاع خط */
+}
+
+.fullscreen-btn:hover {
+    color: #2196F3;
+}
+
+.fullscreen-btn i {
+    font-size: 22px;
+    vertical-align: middle; /* تراز عمودی آیکون */
+}
+
+/* بهبود استایل پنل وضعیت */
+.status-panel {
+    /* ... استایل‌های قبلی ... */
+    display: flex;
+    align-items: center;
+    gap: 8px; /* فاصله بین آیکون و متن */
+}
+
+.status-icon {
+    font-size: 18px; /* اندازه آیکون وضعیت */
+}
+
+/* بهبود استایل دکمه‌های کنترل */
+.controls {
+    /* ... استایل‌های قبلی ... */
+    gap: 20px; /* افزایش فاصله بین دکمه‌ها */
+}
+
+.btn {
+    /* ... استایل‌های قبلی ... */
+    padding: 12px 20px; /* کمی پدینگ بیشتر */
+    font-size: 16px; /* اندازه فونت دکمه */
+}
+
+/* استایل‌های تم تاریک (در dark.css باید تعریف شوند) */
+body.dark-mode .filter-status-label {
+    color: #bbb; /* رنگ متن وضعیت در حالت تاریک */
+}
+
+body.dark-mode .fullscreen-btn {
+    color: #bbb; /* رنگ دکمه تمام صفحه در حالت تاریک */
+}
+body.dark-mode .fullscreen-btn:hover {
+    color: #64b5f6; /* رنگ هاور دکمه تمام صفحه در حالت تاریک */
+}
