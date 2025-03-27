@@ -2,9 +2,8 @@
 .theme-toggle-container {
     position: absolute;
     top: 5px;
-    right: 1px;
+    right: 5px;
     display: flex;
-    flex-direction: column-reverse;
     align-items: center;
 }
 
