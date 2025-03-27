@@ -213,9 +213,3 @@ class SpeedFilterManager {
 const speedFilter = new SpeedFilterManager({
 });
 // --- پایان کلاس‌های فیلتر کالمن ---
-
-function updateKalmanFilterLabel() {
-    if (kalmanFilterLabel) {
-        kalmanFilterLabel.textContent = isKalmanFilterEnabled ? 'فیلتر روشن' : 'فیلتر خاموش';
-    }
-}

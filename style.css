@@ -135,8 +135,7 @@ input:checked + .slider:before {
 .controls-container { /* نام جدید */
     position: absolute;
     top: 5px; /* کمی فاصله از بالا */
-    left: 5px; /* انتقال به سمت چپ برای زبان فارسی */
-    right: auto; /* حذف right */
+    right: 5px; /* انتقال به سمت چپ برای زبان فارسی */
     display: flex;
     align-items: center;
     gap: 15px; /* فاصله بین کنترل‌ها */
