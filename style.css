@@ -1,12 +1,11 @@
 /* استایل‌های سوییچ تم */
 .theme-toggle-container {
     position: absolute;
-    top: 15px;
+    top: 5px;
     right: 1px;
     display: flex;
     flex-direction: column-reverse;
     align-items: center;
-    gap: 5px; /* فاصله بین المان‌ها */
 }
 
 .theme-toggle {
