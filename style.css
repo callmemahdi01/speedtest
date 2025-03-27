@@ -6,6 +6,7 @@
     display: flex;
     flex-direction: column-reverse;
     align-items: center;
+    gap: 5px; /* فاصله بین المان‌ها */
 }
 
 .theme-toggle {
@@ -119,10 +120,12 @@ input:checked + .slider:before {
     color: #fff; /* رنگ آیکون فیلتر فعال */
     font-size: 14px;
     margin-right: 5px;
+    z-index: 1; /* برای اطمینان از نمایش درست روی اسلایدر */
 }
 
 .filter-off-icon {
     color: #555; /* رنگ آیکون فیلتر غیرفعال */
     font-size: 14px;
     margin-left: 5px;
+    z-index: 1; /* برای اطمینان از نمایش درست روی اسلایدر */
 }

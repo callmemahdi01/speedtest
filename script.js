@@ -90,11 +90,11 @@ resetButton.addEventListener('click', resetMeasurements);
 
 function startMeasuring() {
     if (!navigator.geolocation) {
-        statusElement.textContent = 'مرورگر شما از GPS پشتیبانی نمی‌کند';
+        statusElement.textContent = 'your browser does not support GPS';
         return;
     }
     
-    statusElement.textContent = 'در حال اتصال به GPS...';
+    statusElement.textContent = 'connecting to GPS...';
     startButton.disabled = true;
 
     watchId = navigator.geolocation.watchPosition(updateSpeed, handleError, {
@@ -124,16 +124,16 @@ function updateSpeed(position) {
             maxSpeed = displaySpeed;
             maxSpeedElement.textContent = maxSpeed.toFixed(1);
         }
-        statusElement.textContent = 'در حال اندازه‌گیری...';
+        statusElement.textContent = 'measuring...';
     } else {
          // اگر سرعت null بود، مقدار قبلی یا صفر را نشان دهد
          // speedElement.textContent = 'N/A'; // یا هر مقدار مناسب دیگر
-         statusElement.textContent = 'سیگنال سرعت نامعتبر';
+         statusElement.textContent = 'invalid speed signal';
     }
 }
 
 function handleError(error) {
-    statusElement.textContent = 'خطای GPS';
+    statusElement.textContent = 'GPS error';
     startButton.disabled = false;
 }
 
@@ -143,7 +143,7 @@ function resetMeasurements() {
     }
     speedElement.textContent = '0';
     maxSpeedElement.textContent = '0';
-    statusElement.textContent = 'در انتظار شروع...';
+    statusElement.textContent = 'waiting for start...';
     startButton.disabled = false;
 }
 
@@ -182,8 +182,6 @@ class EnhancedSpeedFilter {
             measurementNoiseR: 0.5,   // نویز اندازه‌گیری
             processNoiseQ: 0.01,       // نویز فرایند
             historyLimit: 5,           // تعداد نمونه‌های قبلی
-            baseSpeed: 120,            // سرعت پایه برای رند کردن هوشمندانه
-            maxSpeedVariation: 2       // حداکثر تغییر مجاز سرعت
         };
 
         // ادغام پارامترهای دلخواه کاربر
@@ -235,21 +233,9 @@ class EnhancedSpeedFilter {
     }
 
     smartRound(speed) {
-        const { baseSpeed, maxSpeedVariation } = this.options;
 
-        // اگر سرعت نزدیک به سرعت پایه است
-        if (Math.abs(speed - baseSpeed) < maxSpeedVariation) {
-            return baseSpeed;
-        }
-
-        // گرد کردن دقیق به یک رقم اعشار
         return Math.round(speed * 10) / 10;
     }
 }
 // --- پایان کلاس‌های فیلتر کالمن ---
 
-// نمونه‌سازی فیلتر
-const speedFilter = new EnhancedSpeedFilter({
-    baseSpeed: 120,
-    maxSpeedVariation: 1
-});

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="en" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,8 +11,7 @@
 <body>
     <div class="app-container">
         <div class="app-header">
-            <h1 class="app-title">سرعت سنج خودرو</h1>
-            <p class="app-subtitle">با استفاده از فناوری GPS</p>
+            <h1 class="app-title">GPS Speedometer</h1>
 
             <div class="theme-toggle-container">
                 <!-- Dark Mode Toggle Switch -->
@@ -25,10 +24,11 @@
                 </label>
 
                 <!-- Kalman Filter Toggle Switch -->
-                <label class="theme-toggle filter-toggle" for="kalmanFilterToggle">
+                <label class="theme-toggle filter-toggle" for="kalmanFilterToggle" title="Enable/Disable Kalman Filter">
                     <input type="checkbox" id="kalmanFilterToggle" checked>
                     <div class="slider round">
-
+                        <i class="fas fa-filter filter-on-icon"></i>
+                        <i class="fas fa-ban filter-off-icon"></i>
                     </div>
                 </label>
 
@@ -43,27 +43,27 @@
             <div class="speed-circle">
                 <div>
                     <div class="speed-value" id="speed">0</div>
-                    <div class="speed-unit">کیلومتر بر ساعت</div>
+                    <div class="speed-unit"> KM/H </div>
                 </div>
             </div>
 
             <div class="max-speed">
-                <span class="max-speed-label">حداکثر سرعت:</span>
-                <span class="max-speed-value"><span id="maxSpeed">0</span> کیلومتر بر ساعت</span>
+                <span class="max-speed-label">max speed: ‌</span>
+                <span class="max-speed-value"><span id="maxSpeed">0</span>  KM/H </span>
             </div>
         </div>
 
         <div class="status-panel">
-            <i class="fas fa-info-circle"></i>
-            <span class="status-text" id="status">در انتظار شروع...</span>
+            <i class="fas fa-info-circle">  ‌</i>
+            <span class="status-text" id="status">waiting for start ...</span>
         </div>
 
         <div class="controls">
             <button id="startButton" class="btn start-btn">
-                <i class="fas fa-play"></i> شروع اندازه گیری
+                <i class="fas fa-play"> start</i> 
             </button>
             <button id="resetButton" class="btn reset-btn">
-                <i class="fas fa-redo-alt"></i> بازنشانی
+                <i class="fas fa-redo-alt">  reset</i> 
             </button>
         </div>
     </div>
