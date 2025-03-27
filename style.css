@@ -1,9 +1,10 @@
 /* استایل‌های سوییچ تم */
 .theme-toggle-container {
     position: absolute;
-    top: 1px;
+    top: 15px;
     right: 1px;
     display: flex;
+    flex-direction: column-reverse;
     align-items: center;
 }
 
@@ -86,10 +87,10 @@ input:checked + .slider:before {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 20px;
-    margin-left: 10px;
     color: #777;
     transition: color 0.3s ease;
+    scale: 1.5;
+    margin: 10px;
 }
 
 .fullscreen-btn:hover {
