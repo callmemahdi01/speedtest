@@ -99,3 +99,34 @@ input:checked + .slider:before {
 .fullscreen-btn i {
     font-size: 22px;
 }
+
+/* استایل سوییچ فیلتر کالمن */
+.kalman-toggle .slider {
+    background-color: #ccc; /* Default off state */
+}
+
+.kalman-toggle input:checked + .slider {
+    background-color: #4CAF50; /* Green for on state */
+}
+
+.kalman-toggle .toggle-label {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    line-height: 30px; /* Match slider height */
+    font-size: 12px;
+    color: white;
+    font-weight: bold;
+    transition: .4s;
+    z-index: 1; /* Below the handle */
+}
+
+.kalman-toggle input:checked + .slider .toggle-label {
+    /* Style for 'on' label if needed */
+}
+
+.kalman-toggle .slider:before {
+    /* Ensure handle is above label */
+    z-index: 2;
+}
