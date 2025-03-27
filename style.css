@@ -134,11 +134,12 @@ input:checked + .slider:before {
 /* استایل‌های کنترل‌های هدر */
 .controls-container { /* نام جدید */
     position: absolute;
-    top: 5px; /* کمی فاصله از بالا */
+    top: 15px; /* کمی فاصله از بالا */
     right: 5px; /* انتقال به سمت چپ برای زبان فارسی */
     display: flex;
     align-items: center;
     gap: 15px; /* فاصله بین کنترل‌ها */
+    flex-direction: row-reverse;
 }
 
 .theme-toggle {
@@ -267,12 +268,13 @@ input:checked + .slider:before {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 20px;
-    /* margin-left: 10px; حذف مارجین اضافی */
     color: #777;
     transition: color 0.3s ease;
-    padding: 0; /* حذف پدینگ اضافی */
+    padding: 0px; /* حذف پدینگ اضافی */
     line-height: 1; /* تنظیم ارتفاع خط */
+    margin-right: 15px;
+    scale: 1.2;
+
 }
 
 .fullscreen-btn:hover {
